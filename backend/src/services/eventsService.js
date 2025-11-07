@@ -28,6 +28,7 @@ export function mapEventRow(row) {
     allDay: Boolean(row.all_day),
     memberId: row.member_id,
     location: row.location,
+    color: row.color,
     createdAt: row.created_at
   };
 }

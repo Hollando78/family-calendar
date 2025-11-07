@@ -39,6 +39,7 @@ export default function CalendarView({ events = [], onAddEvent, onEditEvent }) {
   const eventMap = useEventMap(events);
   const dayEvents = eventMap[selectedDate] || [];
   const memberMap = useMemo(() => Object.fromEntries(members.map((member) => [member.id, member])), [members]);
+  const getEventColor = (event) => event.color || memberMap[event.memberId]?.color || '#94a3b8';
 
   const changeMonth = (direction) => {
     const newDate = anchorDate.plus({ months: direction }).startOf('month');
@@ -49,7 +50,11 @@ export default function CalendarView({ events = [], onAddEvent, onEditEvent }) {
     <div className="space-y-2">
       {dayEvents.length === 0 && <p className="text-sm text-slate-500">Nothing planned for this day.</p>}
       {dayEvents.map((event, index) => (
-        <article key={event.id || `${event.title}-${index}`} className="bg-white rounded-2xl p-3 shadow-sm">
+        <article
+          key={event.id || `${event.title}-${index}`}
+          className="bg-white rounded-2xl p-3 shadow-sm border border-slate-100"
+          style={{ borderLeft: `4px solid ${getEventColor(event)}` }}
+        >
           <div className="flex items-center justify-between mb-1 gap-4">
             <p className="font-semibold text-slate-900">{event.title}</p>
             <div className="flex items-center gap-3 text-xs text-slate-500">
@@ -63,7 +68,7 @@ export default function CalendarView({ events = [], onAddEvent, onEditEvent }) {
           {event.memberId && (
             <span
               className="inline-flex px-2 py-1 rounded-full text-xs font-medium border"
-              style={{ borderColor: memberMap[event.memberId]?.color || '#94a3b8', color: memberMap[event.memberId]?.color || '#475569' }}
+              style={{ borderColor: getEventColor(event), color: getEventColor(event) }}
             >
               {memberMap[event.memberId]?.name || 'Member'}
             </span>
@@ -78,7 +83,9 @@ export default function CalendarView({ events = [], onAddEvent, onEditEvent }) {
       {week.map((day) => {
         const dateKey = day.toISODate();
         const isActive = dateKey === selectedDate;
-        const hasEvents = Boolean(eventMap[dateKey]?.length);
+        const eventsForDay = eventMap[dateKey] || [];
+        const hasEvents = Boolean(eventsForDay.length);
+        const dotColor = eventsForDay[0] ? getEventColor(eventsForDay[0]) : '#F97316';
         return (
           <button
             type="button"
@@ -90,7 +97,7 @@ export default function CalendarView({ events = [], onAddEvent, onEditEvent }) {
           >
             <span className="text-xs uppercase">{day.toFormat('ccc')}</span>
             <span className="text-lg font-semibold">{day.toFormat('dd')}</span>
-            {hasEvents && <span className="w-2 h-2 rounded-full bg-accent mt-1" />}
+            {hasEvents && <span className="w-2 h-2 rounded-full mt-1" style={{ backgroundColor: dotColor }} />}
           </button>
         );
       })}
@@ -148,7 +155,7 @@ export default function CalendarView({ events = [], onAddEvent, onEditEvent }) {
                   <span
                     key={event.id}
                     className="w-2 h-2 rounded-full"
-                    style={{ backgroundColor: memberMap[event.memberId]?.color || '#94a3b8' }}
+                    style={{ backgroundColor: getEventColor(event) }}
                   />
                 ))}
                 {dailyEvents.length > 3 && (

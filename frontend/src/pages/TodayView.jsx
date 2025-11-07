@@ -17,6 +17,8 @@ export default function TodayView({ events = [], onAddEvent, onEditEvent }) {
     .filter((event) => !event.allDay)
     .sort((a, b) => (a.time || '').localeCompare(b.time || ''));
 
+  const getEventColor = (event) => event.color || memberMap[event.memberId]?.color || '#475569';
+
   return (
     <section className="space-y-4">
       <div className="flex items-center justify-between">
@@ -44,7 +46,11 @@ export default function TodayView({ events = [], onAddEvent, onEditEvent }) {
           <p className="text-xs uppercase text-slate-500 mb-2">All day</p>
           <div className="space-y-2">
             {allDay.map((event) => (
-              <article key={event.id} className="bg-white rounded-2xl p-3 shadow-sm border border-slate-100 space-y-1">
+              <article
+                key={event.id}
+                className="bg-white rounded-2xl p-3 shadow-sm border border-slate-100 space-y-1"
+                style={{ borderLeft: `4px solid ${getEventColor(event)}` }}
+              >
                 <div className="flex items-center justify-between gap-3">
                   <p className="font-medium text-slate-900">{event.title}</p>
                   <button type="button" className="text-xs text-primary" onClick={() => onEditEvent?.(event)}>
@@ -63,8 +69,11 @@ export default function TodayView({ events = [], onAddEvent, onEditEvent }) {
           <p className="text-xs uppercase text-slate-500 mb-2">Schedule</p>
           <div className="space-y-3">
             {timed.map((event) => (
-              <article key={event.id} className="bg-white rounded-2xl p-3 shadow-sm flex gap-3">
-                <div className="text-sm font-semibold text-primary min-w-[60px]">{event.time || '--'}</div>
+              <article key={event.id} className="bg-white rounded-2xl p-3 shadow-sm flex gap-3 border border-slate-100" style={{ borderLeft: `4px solid ${getEventColor(event)}` }}>
+                <div className="text-sm font-semibold text-primary min-w-[60px] flex flex-col items-center">
+                  <span>{event.time || '--'}</span>
+                  <span className="w-2 h-2 rounded-full mt-1" style={{ backgroundColor: getEventColor(event) }} />
+                </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between gap-3">
                     <p className="font-medium text-slate-900">{event.title}</p>

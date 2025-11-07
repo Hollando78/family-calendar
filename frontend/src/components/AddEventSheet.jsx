@@ -3,6 +3,7 @@ import { DateTime } from 'luxon';
 import { useAppContext } from '../context/AppContext.jsx';
 
 const weekdayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+const colorOptions = ['#EF4444', '#F97316', '#FACC15', '#22C55E', '#0EA5E9', '#8B5CF6', '#EC4899', '#475569'];
 
 function createDefaultForm(date) {
   const base = DateTime.fromISO(date || DateTime.now().toISODate());
@@ -17,7 +18,8 @@ function createDefaultForm(date) {
     repeatUntil: '',
     memberId: '',
     location: '',
-    description: ''
+    description: '',
+    color: ''
   };
 }
 
@@ -37,7 +39,8 @@ function createFormFromEvent(event) {
     repeatUntil: repeatRule?.until || '',
     memberId: event.memberId ? String(event.memberId) : '',
     location: event.location || '',
-    description: event.description || ''
+    description: event.description || '',
+    color: event.color || ''
   };
 }
 
@@ -97,7 +100,8 @@ export default function AddEventSheet({ open, onClose, initialDate, event }) {
         memberId: form.memberId ? Number(form.memberId) : null,
         description: form.description || null,
         location: form.location || null,
-        repeatRule
+        repeatRule,
+        color: form.color || null
       };
 
     try {
@@ -256,6 +260,33 @@ export default function AddEventSheet({ open, onClose, initialDate, event }) {
             ))}
           </select>
         </label>
+
+        <div className="space-y-2">
+          <span className="text-sm text-slate-600">Event colour</span>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              className={`px-3 py-2 rounded-lg border text-xs font-semibold ${
+                !form.color ? 'border-slate-900 text-slate-900' : 'border-slate-200 text-slate-500'
+              }`}
+              onClick={() => setForm((prev) => ({ ...prev, color: '' }))}
+            >
+              None
+            </button>
+            {colorOptions.map((color) => (
+              <button
+                type="button"
+                key={color}
+                className={`w-10 h-10 rounded-full border-2 ${
+                  form.color === color ? 'border-slate-900 scale-110' : 'border-transparent'
+                }`}
+                style={{ backgroundColor: color }}
+                onClick={() => setForm((prev) => ({ ...prev, color }))}
+                aria-label={`Select ${color}`}
+              />
+            ))}
+          </div>
+        </div>
 
         <label className="block space-y-1">
           <span className="text-sm text-slate-600">Location</span>

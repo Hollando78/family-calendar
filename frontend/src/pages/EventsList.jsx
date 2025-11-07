@@ -6,6 +6,7 @@ import { useAppContext } from '../context/AppContext.jsx';
 export default function EventsList({ events = [], onEditEvent }) {
   const { members } = useAppContext();
   const memberMap = useMemo(() => Object.fromEntries(members.map((member) => [member.id, member])), [members]);
+  const getEventColor = (event) => event.color || memberMap[event.memberId]?.color || '#94a3b8';
 
   const grouped = useMemo(() => {
     const map = {};
@@ -45,7 +46,11 @@ export default function EventsList({ events = [], onEditEvent }) {
               </div>
               <div className="space-y-2">
                 {grouped[date].map((event) => (
-                  <article key={event.id} className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 space-y-2">
+                  <article
+                    key={event.id}
+                    className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 space-y-2"
+                    style={{ borderLeft: `4px solid ${getEventColor(event)}` }}
+                  >
                     <div className="flex items-start justify-between gap-4">
                       <div>
                         <p className="font-semibold text-slate-900">{event.title}</p>
@@ -64,7 +69,7 @@ export default function EventsList({ events = [], onEditEvent }) {
                     {event.memberId && (
                       <span
                         className="inline-flex px-2 py-1 rounded-full text-xs font-medium border"
-                        style={{ borderColor: memberMap[event.memberId]?.color || '#94a3b8', color: memberMap[event.memberId]?.color || '#475569' }}
+                        style={{ borderColor: getEventColor(event), color: getEventColor(event) }}
                       >
                         {memberMap[event.memberId]?.name || 'Member'}
                       </span>

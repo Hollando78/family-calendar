@@ -8,8 +8,8 @@ const router = Router();
 const getEvents = db.prepare('SELECT * FROM events WHERE family_id = ? ORDER BY date ASC, time ASC');
 const getEventById = db.prepare('SELECT * FROM events WHERE id = ? AND family_id = ?');
 const insertEvent = db.prepare(`
-  INSERT INTO events (family_id, created_by, title, description, date, time, repeat_rule, all_day, member_id, location)
-  VALUES (@family_id, @created_by, @title, @description, @date, @time, @repeat_rule, @all_day, @member_id, @location)
+  INSERT INTO events (family_id, created_by, title, description, date, time, repeat_rule, all_day, member_id, location, color)
+  VALUES (@family_id, @created_by, @title, @description, @date, @time, @repeat_rule, @all_day, @member_id, @location, @color)
 `);
 const updateEventStmt = db.prepare(`
   UPDATE events
@@ -20,7 +20,8 @@ const updateEventStmt = db.prepare(`
       repeat_rule = @repeat_rule,
       all_day = @all_day,
       member_id = @member_id,
-      location = @location
+      location = @location,
+      color = @color
   WHERE id = @id AND family_id = @family_id
 `);
 const deleteEventStmt = db.prepare('DELETE FROM events WHERE id = ? AND family_id = ?');
@@ -41,7 +42,8 @@ router.post('/events', requireAuth, (req, res) => {
     repeatRule = null,
     allDay = false,
     memberId = null,
-    location = null
+    location = null,
+    color = null
   } = req.body || {};
 
   if (!title || !date) {
@@ -59,7 +61,8 @@ router.post('/events', requireAuth, (req, res) => {
     repeat_rule: sanitizedRule,
     all_day: allDay ? 1 : 0,
     member_id: memberId || null,
-    location: location?.trim() || null
+    location: location?.trim() || null,
+    color: color?.trim() || null
   });
 
   const created = getEventById.get(result.lastInsertRowid, req.user.familyId);
@@ -86,7 +89,8 @@ router.put('/events/:id', requireAuth, (req, res) => {
     repeat_rule: sanitizedRepeatRule,
     all_day: req.body.allDay !== undefined ? (req.body.allDay ? 1 : 0) : event.all_day,
     member_id: req.body.memberId ?? event.member_id,
-    location: req.body.location?.trim() ?? event.location
+    location: req.body.location?.trim() ?? event.location,
+    color: req.body.color?.trim() ?? event.color ?? null
   };
 
   updateEventStmt.run(payload);

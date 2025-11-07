@@ -43,6 +43,7 @@ const migrations = [
     all_day INTEGER DEFAULT 0,
     member_id INTEGER,
     location TEXT,
+    color TEXT,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(family_id) REFERENCES families(id) ON DELETE CASCADE,
     FOREIGN KEY(created_by) REFERENCES users(id) ON DELETE SET NULL,
@@ -52,5 +53,11 @@ const migrations = [
 ];
 
 migrations.forEach((sql) => db.exec(sql));
+
+const eventColumns = db.prepare('PRAGMA table_info(events)').all();
+const hasColorColumn = eventColumns.some((column) => column.name === 'color');
+if (!hasColorColumn) {
+  db.prepare('ALTER TABLE events ADD COLUMN color TEXT').run();
+}
 
 export default db;
