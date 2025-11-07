@@ -6,7 +6,7 @@ function buildWeek(start = DateTime.now()) {
   return Array.from({ length: 7 }, (_, index) => start.plus({ days: index }));
 }
 
-export default function CalendarView({ events = [], onAddEvent }) {
+export default function CalendarView({ events = [], onAddEvent, onEditEvent }) {
   const [selectedDate, setSelectedDate] = useState(DateTime.now().toISODate());
   const { members } = useAppContext();
   const week = buildWeek();
@@ -54,9 +54,14 @@ export default function CalendarView({ events = [], onAddEvent }) {
 
         {dayEvents.map((event, index) => (
           <article key={event.id || `${event.title}-${index}`} className="bg-white rounded-2xl p-3 shadow-sm">
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between mb-1 gap-4">
               <p className="font-semibold text-slate-900">{event.title}</p>
-              <span className="text-xs text-slate-500">{event.allDay ? 'All day' : event.time || '--'}</span>
+              <div className="flex items-center gap-3 text-xs text-slate-500">
+                <span>{event.allDay ? 'All day' : event.time || '--'}</span>
+                <button type="button" className="text-primary" onClick={() => onEditEvent?.(event)}>
+                  Edit
+                </button>
+              </div>
             </div>
             {event.description && <p className="text-sm text-slate-500">{event.description}</p>}
             {event.memberId && (

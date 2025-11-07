@@ -21,18 +21,39 @@ function createDefaultForm(date) {
   };
 }
 
-export default function AddEventSheet({ open, onClose, initialDate }) {
-  const { members, createEvent } = useAppContext();
-  const [form, setForm] = useState(() => createDefaultForm(initialDate));
+function createFormFromEvent(event) {
+  const baseDate = DateTime.fromISO(event.date || DateTime.now().toISODate());
+  const repeatRule = event.repeatRule || null;
+  return {
+    title: event.title,
+    date: event.date,
+    time: event.time || '09:00',
+    allDay: Boolean(event.allDay),
+    repeat: repeatRule?.type || 'none',
+    interval: repeatRule?.interval || 1,
+    weekdays: repeatRule?.byWeekday?.length
+      ? repeatRule.byWeekday
+      : [((baseDate.weekday) % 7)],
+    repeatUntil: repeatRule?.until || '',
+    memberId: event.memberId ? String(event.memberId) : '',
+    location: event.location || '',
+    description: event.description || ''
+  };
+}
+
+export default function AddEventSheet({ open, onClose, initialDate, event }) {
+  const { members, createEvent, updateEvent, deleteEvent } = useAppContext();
+  const [form, setForm] = useState(() => (event ? createFormFromEvent(event) : createDefaultForm(initialDate)));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+  const isEdit = Boolean(event);
 
   useEffect(() => {
     if (open) {
-      setForm(createDefaultForm(initialDate));
+      setForm(event ? createFormFromEvent(event) : createDefaultForm(initialDate));
       setError(null);
     }
-  }, [open, initialDate]);
+  }, [open, initialDate, event]);
 
   const repeatRule = useMemo(() => {
     if (form.repeat === 'none') return null;
@@ -68,17 +89,37 @@ export default function AddEventSheet({ open, onClose, initialDate }) {
     event.preventDefault();
     setSaving(true);
     setError(null);
-    try {
-      await createEvent({
+    const payload = {
         title: form.title,
         date: form.date,
         time: form.allDay ? null : form.time,
         allDay: form.allDay,
-        memberId: form.memberId || null,
+        memberId: form.memberId ? Number(form.memberId) : null,
         description: form.description || null,
         location: form.location || null,
         repeatRule
-      });
+      };
+
+    try {
+      if (isEdit && event?.id) {
+        await updateEvent(event.id, payload);
+      } else {
+        await createEvent(payload);
+      }
+      onClose();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!event?.id) return;
+    setSaving(true);
+    setError(null);
+    try {
+      await deleteEvent(event.id);
       onClose();
     } catch (err) {
       setError(err.message);
@@ -94,7 +135,7 @@ export default function AddEventSheet({ open, onClose, initialDate }) {
         className="bg-white w-full md:max-w-md rounded-t-3xl md:rounded-3xl p-4 space-y-4 max-h-[90vh] overflow-y-auto"
       >
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-900">Add Event</h2>
+          <h2 className="text-lg font-semibold text-slate-900">{isEdit ? 'Edit Event' : 'Add Event'}</h2>
           <button type="button" className="text-sm text-slate-500" onClick={onClose}>
             Close
           </button>
@@ -237,13 +278,26 @@ export default function AddEventSheet({ open, onClose, initialDate }) {
 
         {error && <p className="text-sm text-red-600">{error}</p>}
 
-        <button
-          type="submit"
-          className="w-full bg-primary text-white rounded-xl py-3 font-semibold disabled:opacity-50"
-          disabled={saving}
-        >
-          {saving ? 'Saving...' : 'Save Event'}
-        </button>
+        <div className="space-y-3">
+          <button
+            type="submit"
+            className="w-full bg-primary text-white rounded-xl py-3 font-semibold disabled:opacity-50"
+            disabled={saving}
+          >
+            {saving ? 'Saving...' : isEdit ? 'Update Event' : 'Save Event'}
+          </button>
+
+          {isEdit && (
+            <button
+              type="button"
+              className="w-full border border-red-200 text-red-600 rounded-xl py-2 font-semibold disabled:opacity-50"
+              onClick={handleDelete}
+              disabled={saving}
+            >
+              Delete Event
+            </button>
+          )}
+        </div>
       </form>
     </div>
   );

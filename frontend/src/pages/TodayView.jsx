@@ -2,7 +2,7 @@ import { DateTime } from 'luxon';
 import { useMemo } from 'react';
 import { useAppContext } from '../context/AppContext.jsx';
 
-export default function TodayView({ events = [], onAddEvent }) {
+export default function TodayView({ events = [], onAddEvent, onEditEvent }) {
   const today = DateTime.now().toISODate();
   const { members, loading } = useAppContext();
   const memberMap = useMemo(() => Object.fromEntries(members.map((m) => [m.id, m])), [members]);
@@ -44,8 +44,13 @@ export default function TodayView({ events = [], onAddEvent }) {
           <p className="text-xs uppercase text-slate-500 mb-2">All day</p>
           <div className="space-y-2">
             {allDay.map((event) => (
-              <article key={event.id} className="bg-white rounded-2xl p-3 shadow-sm border border-slate-100">
-                <p className="font-medium text-slate-900">{event.title}</p>
+              <article key={event.id} className="bg-white rounded-2xl p-3 shadow-sm border border-slate-100 space-y-1">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="font-medium text-slate-900">{event.title}</p>
+                  <button type="button" className="text-xs text-primary" onClick={() => onEditEvent?.(event)}>
+                    Edit
+                  </button>
+                </div>
                 {event.description && <p className="text-sm text-slate-500">{event.description}</p>}
               </article>
             ))}
@@ -61,7 +66,12 @@ export default function TodayView({ events = [], onAddEvent }) {
               <article key={event.id} className="bg-white rounded-2xl p-3 shadow-sm flex gap-3">
                 <div className="text-sm font-semibold text-primary min-w-[60px]">{event.time || '--'}</div>
                 <div className="flex-1">
-                  <p className="font-medium text-slate-900">{event.title}</p>
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="font-medium text-slate-900">{event.title}</p>
+                    <button type="button" className="text-xs text-primary" onClick={() => onEditEvent?.(event)}>
+                      Edit
+                    </button>
+                  </div>
                   {event.location && <p className="text-xs text-slate-500">{event.location}</p>}
                   {event.memberId && (
                     <p className="text-xs text-slate-500 mt-1">
