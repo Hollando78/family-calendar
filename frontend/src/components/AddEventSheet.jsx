@@ -85,8 +85,8 @@ export default function AddEventSheet({ open, onClose, initialDate, event }) {
     });
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  const handleSubmit = async (submissionEvent) => {
+    submissionEvent.preventDefault();
     setSaving(true);
     setError(null);
     const payload = {
