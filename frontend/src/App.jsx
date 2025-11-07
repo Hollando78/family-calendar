@@ -5,6 +5,7 @@ import { useAppContext } from './context/AppContext.jsx';
 import Layout from './components/Layout.jsx';
 import TodayView from './pages/TodayView.jsx';
 import CalendarView from './pages/CalendarView.jsx';
+import EventsList from './pages/EventsList.jsx';
 import Settings from './pages/Settings.jsx';
 import JoinFamily from './pages/JoinFamily.jsx';
 import AddEventSheet from './components/AddEventSheet.jsx';
@@ -44,6 +45,7 @@ function AuthedApp() {
             path="/calendar"
             element={<CalendarView events={events} onAddEvent={openAddEvent} onEditEvent={openEditEvent} />}
           />
+          <Route path="/events" element={<EventsList events={events} onEditEvent={openEditEvent} />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
