@@ -27,6 +27,11 @@ Backend variables:
 | `VAPID_SUBJECT` | Contact URI, e.g., `mailto:you@example.com`. |
 | `JWT_SECRET` | Long random string for signing tokens. |
 
+Reserved ports (via `portman.py`):
+
+- Backend API: `4006`
+- Frontend dev server: `5000`
+
 Frontend variables:
 
 | Key | Description |
