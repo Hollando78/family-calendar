@@ -1,0 +1,32 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    env_file:
+      - backend/.env
+    environment:
+      PORT: ${API_PORT:-4006}
+      NODE_ENV: production
+      DATABASE_URL: ${DOCKER_DATABASE_URL:-file:/data/family-calendar.sqlite}
+    volumes:
+      - calendar-data:/data
+    ports:
+      - "4006:4006"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-/api}
+        VITE_PUSH_PUBLIC_KEY: ${VITE_PUSH_PUBLIC_KEY:-}
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+
+volumes:
+  calendar-data:

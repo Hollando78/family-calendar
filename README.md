@@ -80,13 +80,23 @@ Highlights:
 - `src/components/AddEventSheet.jsx` provides the mobile-friendly form (title/date/time/repeat/member assignment).
 - `public/service-worker.js` caches shell assets and handles push notifications; `public/manifest.json` enables installation.
 
-### Deployment pointers
+### Deployment (Docker Compose, no PM2)
 
-1. Provision VPS (Ubuntu), install Node LTS, Nginx, SQLite, git, Certbot, and PM2.
-2. Run backend with `pm2 start src/index.js --name family-calendar-api`.
-3. Build frontend (`npm run build`) and point Nginx static root to `frontend/dist`, proxy `/api` to `localhost:4000`.
-4. Request LetsEncrypt cert via `certbot --nginx`.
-5. Ensure `VAPID_*` env vars and `JWT_SECRET` are set; restart backend (`pm2 restart family-calendar-api`).
+The repo now ships with a production-oriented `docker-compose.yml` so the app can be deployed without PM2 or any Node-level process manager.
+
+1. Copy `backend/.env.example` to `backend/.env` and fill in the secrets (`JWT_SECRET`, `VAPID_*`). For Docker the database path is overridden to `file:/data/family-calendar.sqlite`, which is backed by the named `calendar-data` volume.
+2. (Optional) Create a project-root `.env` to override Compose build/run values, e.g.
+   ```
+   API_PORT=4006              # container + host port for the API
+   VITE_API_URL=/api          # what the frontend bakes in at build time
+   VITE_PUSH_PUBLIC_KEY=...   # override if you need to pin a public key at build
+   DOCKER_DATABASE_URL=file:/data/family-calendar.sqlite
+   ```
+3. Build and start everything with `docker compose up -d --build`. This runs the backend on port `API_PORT` (default `4006`) and serves the built frontend + reverse proxy on `http://localhost:8080`.
+4. Tail logs with `docker compose logs -f backend` (API/scheduler) or `docker compose logs -f frontend` (Nginx/Vite assets).
+5. Put any TLS termination or vanity domains in front of the `frontend` service (e.g., Traefik/Caddy or a host-level Nginx) and proxy `/api` internally—the included Nginx config already forwards `/api` traffic to the backend container.
+
+The `calendar-data` volume keeps the SQLite file outside the container image so upgrades only require `docker compose pull` / `docker compose up -d`.
 
 ### Testing & future work
 
